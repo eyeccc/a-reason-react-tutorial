@@ -1,4 +1,5 @@
 type item = {
+  id: int,
   title: string,
   completed: bool
 };
@@ -28,12 +29,20 @@ module TodoItem = {
   };
 };
 
-let newItem = () => {title: "Click a button", completed: true};
+let lastId = ref(0);
 
+let newItem = () => {
+  lastId := lastId^ + 1;
+  {id: lastId^, title: "Click a button", completed: true}
+};
 let make = (children) => {
   ...component,
   initialState: () => {
-    items: [{title: "Write some things to do", completed:false}]
+    items: [{
+      id: 0,
+      title: "Write some things to do",
+      completed:false
+    }]
   },
   reducer: (action, state) =>
     switch action {
@@ -48,9 +57,15 @@ let make = (children) => {
         (str("Add something"))
       </button> 
       </div>
-      <div className="items"> (ReasonReact.arrayToElement(Array.of_list(
-        List.map((item) => <TodoItem item />, items)
-      ))) </div>
+      <div className="items">
+        (List.map(
+          (item) => <TodoItem
+            key=(string_of_int(item.id))
+            item
+            />, items
+          ) |> Array.of_list |> ReasonReact.arrayToElement
+        )
+      </div>
       <div className="footer">(str(string_of_int(numItems) ++ " " ++ num))</div>
     </div>
   }
